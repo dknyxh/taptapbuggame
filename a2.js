@@ -8,26 +8,28 @@ var foodList = [];
 var header;
 //Time
 var startTime;
-var startTime1;
 var eTime;
-var eTime1;
 var lastTime;
+var buggen;
 //FrameID;
 var frameID;
 //CLASS DECALRE
 function Bug(x,y,type,level){
 	this.x = x;
 	this.y = y;
-	this.direction = 0;
+	this.direction = Math.PI/2;
 	if(level = 1){
 		if(type == "b"){
 			this.speed = 150;
+			this.score = 5;
 		}
 		else if(type == "r"){
 			this.speed = 75;
+			this.score = 3;
 		}
 		else if(type == "o"){
 			this.speed = 60;
+			this.score = 1;
 		}
 	}
 	this.draw = function(){
@@ -37,6 +39,8 @@ function Bug(x,y,type,level){
 			ctx.rotate(this.direction+Math.PI/2);
 			ctx.rect(-5,-20,10,40);
 			ctx.stroke();
+			ctx.fillStyle="red";
+			ctx.fillRect(-5,-20,5,20);
 			ctx.restore();
 	}
 	this.move = function(t){
@@ -45,6 +49,18 @@ function Bug(x,y,type,level){
 		var mindistance = Math.sqrt((desx-this.x)*(desx-this.x) + (desy-this.y)*(desy-this.y));
 		var distance = 0;
 		var d;
+		var stop=0;
+		var change_x;
+		var change_y;
+		var willC;
+		var isC;
+		var rC;
+		if(this.direction >=Math.PI){
+			this.direction = -(2*Math.PI - this.direction);
+		}
+		if(this.direction<= -Math.PI){
+			this.direction = this.direction+2*Math.PI;
+		}
 		for(var i = 0;i<foodList.length;i++){
 			distance = Math.sqrt((foodList[i].x-this.x)*(foodList[i].x-this.x) + (foodList[i].y-this.y)*(foodList[i].y-this.y));
 			if(distance < mindistance){
@@ -57,9 +73,38 @@ function Bug(x,y,type,level){
 			}
 		}
 		d = Math.atan2(desy-this.y,desx-this.x);
-		this.direction = d;
-		this.x = this.x + t/1000*this.speed* Math.cos(d);
-		this.y = this.y + t/1000*this.speed* Math.sin(d);
+		this.direction = Math.sign(d-this.direction)*0.03 *Math.sign(Math.PI-Math.abs(d-this.direction)) + this.direction;
+		if(Math.PI-Math.abs(d-this.direction) == 0){
+			this.direction = 0.03 + this.direction;
+		}
+		while(this.direction>2* Math.PI){
+			this.direction-= 2*Math.PI;
+		}
+		change_x = this.x + t/1000*this.speed* Math.cos(d);
+		change_y = this.y + t/1000*this.speed* Math.sin(d);
+		//Collision
+		for(var j=0;j<bugList.length;j++){
+			willC = Math.sqrt((change_x-bugList[j].x)*(change_x-bugList[j].x) + (change_y -bugList[j].y)*(change_y -bugList[j].y))<Math.sqrt(5*5+20*20)*2;
+			isC =  Math.sqrt((this.x-bugList[j].x)*(this.x-bugList[j].x) + (this.y -bugList[j].y)*(this.y -bugList[j].y))<Math.sqrt(5*5+20*20)*2;
+			if(this.speed<bugList[j].speed && (willC ||isC)){
+				stop = 1;
+			}
+			else if(this.speed == bugList[j].speed && (willC ||isC) && this.y!=bugList[j].y){
+				if(this.x<bugList[j].x && !(this.direction>= -Math.PI/2 && this.direction<Math.PI/2)){
+					stop = 0;
+				}
+				else if(this.x>bugList[j].x && this.y < bugList[j].y &&((this.direction<=-Math.PI && this.direction>=-3*Math.PI/2)||(this.direction>=Math.PI/2&&this.direction<=Math.PI))){
+					stop = 1;
+				}
+				else if (this.x<bugList[j].x){
+					stop = 1;
+				}
+			}
+		}
+		if(!stop){
+			this.x = this.x + t/1000*this.speed* Math.cos(d);
+			this.y = this.y + t/1000*this.speed* Math.sin(d);
+		}
 	}
 }
 function Food(x,y){
@@ -83,13 +128,12 @@ function Header(x,y,timer,pause,score){
 		ctx.stroke();
 		ctx.font = "30px Comic Sans MS";
 		ctx.fillText(this.timer+"secs", this.x+2, this.y+32); 
-		console.log(this.timer);
+		ctx.font = "30px Comic Sans MS";
+		ctx.fillText(this.score, this.x+300, this.y+32); 
 
 	}
-	this.change=function(timer,pause){
-		this.timer = timer;
-		this.pause = pause;
-		this.score = score;
+	this.scoreplus = function(score){
+		this.score+=score;
 	}
 	this.countdown=function(){
 		this.timer= this.timer - 1;
@@ -106,20 +150,16 @@ function frame(curTime){
 	if(!lastTime){
 		lastTime=curTime;
 	}
-	if(!startTime1){
-		startTime1=curTime
-	}
 	eTime = curTime-startTime;
-	eTime1 = curTime-startTime1;
-	if(eTime1>=1000){
+	if(eTime>=1000){
 		header.countdown();
-		startTime1 = curTime;
-		//console.log(header.timer);
-	}
-	if(eTime>=3000){
-		var nx = Math.floor((Math.random() * 390) + 0);
-		bugList.push(new Bug(nx,200,"o",1));
 		startTime = curTime;
+		buggen +=1;
+		if(buggen ==1){
+			var nx = Math.floor((Math.random() * 390) + 0);
+			bugList.push(new Bug(nx,200,"o",1));
+			buggen = 0;
+		}
 	}
 	//Draw Header
 	header.draw();
@@ -136,6 +176,21 @@ function frame(curTime){
 	};
 	lastTime = curTime;
 	frameID = window.requestAnimationFrame(frame);
+	if(foodList.length==0){
+		endgame();
+	}
+}
+//Click
+function click(event){
+	var click_x = event.x;
+	var click_y = event.y;
+	/*for(var i = 0;i<bugList.length;i++){
+		if(Math.sqrt((bugList[i].x - click_x)*(bugList[i].x - click_x) + (bugList[i].y - click_y)*(bugList[i].y - click_y))<30){
+			header.scoreplus(bugList[i].score);
+			bugList.splice(i,1);
+		}
+	}*/
+	bugList.push(new Bug(event.x,event.y,'o',1));
 }
 //START
 function startgame(){
@@ -143,9 +198,12 @@ function startgame(){
 	document.getElementById('page1').style.display = "none";
 	document.getElementById('page2').style.display = "inline";
 	//Set up canvas
-	ctx = document.getElementById('game').getContext("2d");
+	var canvas = document.getElementById('game')
+	canvas.addEventListener("mousedown",click,false);
+	ctx = canvas.getContext("2d");
 	ctx.clearRect(0,0,400,800);
 	inGame = 1;
+	buggen = 0;
 	//Determine level
 	if(document.getElementsByName('level')[0].checked){
 		level = 1
