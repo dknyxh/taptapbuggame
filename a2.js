@@ -17,19 +17,23 @@ var frameID;
 function Bug(x,y,type,level){
 	this.x = x;
 	this.y = y;
+	this.bugColor;
 	this.direction = Math.PI/2;
 	if(level = 1){
 		if(type == "b"){
 			this.speed = 150;
 			this.score = 5;
+			this.bugColor = "black";
 		}
 		else if(type == "r"){
 			this.speed = 75;
 			this.score = 3;
+			this.bugColor = "red";
 		}
 		else if(type == "o"){
 			this.speed = 60;
 			this.score = 1;
+			this.bugColor = "orange";
 		}
 	}
 	this.draw = function(){
@@ -39,8 +43,8 @@ function Bug(x,y,type,level){
 			ctx.rotate(this.direction+Math.PI/2);
 			ctx.rect(-5,-20,10,40);
 			ctx.stroke();
-			ctx.fillStyle="red";
-			ctx.fillRect(-5,-20,5,20);
+			ctx.fillStyle=this.bugColor;
+			ctx.fillRect(-5,-20,10,20);
 			ctx.restore();
 	}
 	this.move = function(t){
@@ -157,7 +161,18 @@ function frame(curTime){
 		buggen +=1;
 		if(buggen ==1){
 			var nx = Math.floor((Math.random() * 390) + 0);
-			bugList.push(new Bug(nx,200,"o",1));
+			var rd = Math.floor(Math.random()*3);
+			var col;
+			if(rd == 0){
+				col = "o";
+			}
+			else if(rd ==1){
+				col = "b";
+			}
+			else{
+				col = "r";
+			}
+			bugList.push(new Bug(nx,200,col,1));
 			buggen = 0;
 		}
 	}
@@ -179,6 +194,9 @@ function frame(curTime){
 	if(foodList.length==0){
 		endgame();
 	}
+}
+function pause(){
+	window.cancelAnimationFrame(frameID);
 }
 //Click
 function click(event){
