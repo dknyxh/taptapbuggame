@@ -37,15 +37,44 @@ function Bug(x,y,type,level){
 		}
 	}
 	this.draw = function(){
-			ctx.save();
-			ctx.beginPath();
-			ctx.translate(this.x,this.y);
-			ctx.rotate(this.direction+Math.PI/2);
-			ctx.rect(-5,-20,10,40);
-			ctx.stroke();
-			ctx.fillStyle=this.bugColor;
-			ctx.fillRect(-5,-20,10,20);
-			ctx.restore();
+			// ctx.save();
+			// ctx.beginPath();
+			// ctx.translate(this.x,this.y);
+			// ctx.rotate(this.direction+Math.PI/2);
+			// ctx.rect(-5,-20,10,40);
+			// ctx.stroke();
+			// ctx.fillStyle=this.bugColor;
+			// ctx.fillRect(-5,-20,10,20);
+			// ctx.restore();
+		ctx.save();
+		ctx.translate(this.x,this.y);
+		ctx.beginPath();
+		ctx.rotate(this.direction+Math.PI/2);
+		ctx.arc(0,-15,5,0*Math.PI,2*Math.PI);
+		ctx.stroke();
+		ctx.fillStyle = this.bugColor;
+		ctx.fill();
+		ctx.moveTo(0,-10);
+		ctx.quadraticCurveTo(-10,-10,0,20);
+		ctx.stroke();
+		ctx.moveTo(0,-10);
+		ctx.quadraticCurveTo(10,-10,0,20);
+		ctx.stroke();
+		ctx.fillStyle = this.bugColor;
+		ctx.fill();
+		ctx.moveTo(-5,2);
+		ctx.lineTo(-10,4);
+		ctx.stroke();
+		ctx.moveTo(5,2);
+		ctx.lineTo(10,4);
+		ctx.stroke();
+		ctx.moveTo(-3,10);
+		ctx.lineTo(-8,12);
+		ctx.stroke();
+		ctx.moveTo(3,10);
+		ctx.lineTo(8,12);
+		ctx.stroke();
+		ctx.restore();
 	}
 	this.move = function(t){
 		var desx = foodList[0].x;
@@ -77,9 +106,9 @@ function Bug(x,y,type,level){
 			}
 		}
 		d = Math.atan2(desy-this.y,desx-this.x);
-		this.direction = Math.sign(d-this.direction)*0.03 *Math.sign(Math.PI-Math.abs(d-this.direction)) + this.direction;
+		this.direction = Math.sign(d-this.direction)*0.05 *Math.sign(Math.PI-Math.abs(d-this.direction)) + this.direction;
 		if(Math.PI-Math.abs(d-this.direction) == 0){
-			this.direction = 0.03 + this.direction;
+			this.direction = 0.05 + this.direction;
 		}
 		while(this.direction>2* Math.PI){
 			this.direction-= 2*Math.PI;
@@ -93,17 +122,17 @@ function Bug(x,y,type,level){
 			if(this.speed<bugList[j].speed && (willC ||isC)){
 				stop = 1;
 			}
-			else if(this.speed == bugList[j].speed && (willC ||isC) && this.y!=bugList[j].y){
-				if(this.x<bugList[j].x && !(this.direction>= -Math.PI/2 && this.direction<Math.PI/2)){
-					stop = 0;
-				}
-				else if(this.x>bugList[j].x && this.y < bugList[j].y &&((this.direction<=-Math.PI && this.direction>=-3*Math.PI/2)||(this.direction>=Math.PI/2&&this.direction<=Math.PI))){
-					stop = 1;
-				}
-				else if (this.x<bugList[j].x){
-					stop = 1;
-				}
-			}
+			// else if(this.speed == bugList[j].speed && (willC ||isC) && this.y!=bugList[j].y){
+			// 	if(this.x<bugList[j].x && !(this.direction>= -Math.PI/2 && this.direction<Math.PI/2)){
+			// 		stop = 0;
+			// 	}
+			// 	else if(this.x>bugList[j].x && this.y < bugList[j].y &&((this.direction<=-Math.PI && this.direction>=-3*Math.PI/2)||(this.direction>=Math.PI/2&&this.direction<=Math.PI))){
+			// 		stop = 1;
+			// 	}
+			// 	else if (this.x<bugList[j].x){
+			// 		stop = 1;
+			// 	}
+			// }
 		}
 		if(!stop){
 			this.x = this.x + t/1000*this.speed* Math.cos(d);
@@ -146,7 +175,7 @@ function Header(x,y,timer,pause,score){
 //Frame
 function frame(curTime){
 	//Draw set up
-	ctx.clearRect(0,0,400,800);
+	ctx.clearRect(0,0,400,600);
 	//Time Section
 	if(!startTime){
 		startTime=curTime;
@@ -156,9 +185,10 @@ function frame(curTime){
 	}
 	eTime = curTime-startTime;
 	if(eTime>=1000){
-		header.countdown();
+		//header.countdown();
 		startTime = curTime;
 		buggen +=1;
+		//Generate Bugs
 		if(buggen ==1){
 			var nx = Math.floor((Math.random() * 390) + 0);
 			var rd = Math.floor(Math.random()*3);
@@ -172,12 +202,12 @@ function frame(curTime){
 			else{
 				col = "r";
 			}
-			bugList.push(new Bug(nx,200,col,1));
+			bugList.push(new Bug(nx,-20,col,1));
 			buggen = 0;
 		}
 	}
 	//Draw Header
-	header.draw();
+	//header.draw();
 	//Draw Food
 	for (var i = 0; i <foodList.length; i++) {
 		foodList[i].draw();
@@ -230,17 +260,17 @@ function startgame(){
 		level = 2
 	}
 	//Create header
-	header = new Header(0,0,100,1,100);
+	//header = new Header(0,0,100,1,100);
 	//Create food
 	var fx = 0;
 	var fy = 0;
 	for (var i = 0; i < 5; i++) {
 		fx = Math.floor((Math.random() * 380) + 0);
-		fy = Math.floor((Math.random() * 460) + 320);
+		fy = Math.floor((Math.random() * 460) + 120);
 		for(var j =0;j<foodList.length;j++){
 			while(Math.abs(fx-foodList[j].x) < Math.sqrt(200) || Math.abs(fy-foodList[j].y) < Math.sqrt(200) ){
 				fx = Math.floor((Math.random() * 380) + 0);
-				fy = Math.floor((Math.random() * 460) + 320);
+				fy = Math.floor((Math.random() * 460) + 120);
 			}
 		}
 		foodList.push(new Food(fx,fy));
@@ -257,7 +287,7 @@ function endgame(){
 	window.cancelAnimationFrame(frameID);
 	bugList.splice(0,bugList.length);
 	foodList.splice(0,foodList.length);
-	ctx.clearRect(0,0,400,800);
+	ctx.clearRect(0,0,400,600);
 	ctx = null;
 	inGame = 0;
 	level = 0;
