@@ -19,6 +19,8 @@ function Bug(x,y,type,level){
 	this.y = y;
 	this.bugColor;
 	this.direction = Math.PI/2;
+	this.dead = 0;
+	this.opacity = 1;
 	if(level = 1){
 		if(type == "b"){
 			this.speed = 150;
@@ -76,6 +78,39 @@ function Bug(x,y,type,level){
 		ctx.stroke();
 		ctx.restore();
 	}
+	this.fade = function(){
+		ctx.save();
+		ctx.globalAlpha = this.opacity /2 ;
+		this.opacity /=2;
+		ctx.translate(this.x,this.y);
+		ctx.beginPath();
+		ctx.rotate(this.direction+Math.PI/2);
+		ctx.arc(0,-15,5,0*Math.PI,2*Math.PI);
+		ctx.stroke();
+		ctx.fillStyle = "red";
+		ctx.fill();
+		ctx.moveTo(0,-10);
+		ctx.quadraticCurveTo(-10,-10,0,20);
+		ctx.stroke();
+		ctx.moveTo(0,-10);
+		ctx.quadraticCurveTo(10,-10,0,20);
+		ctx.stroke();
+		ctx.fillStyle = "red";
+		ctx.fill();
+		ctx.moveTo(-5,2);
+		ctx.lineTo(-10,4);
+		ctx.stroke();
+		ctx.moveTo(5,2);
+		ctx.lineTo(10,4);
+		ctx.stroke();
+		ctx.moveTo(-3,10);
+		ctx.lineTo(-8,12);
+		ctx.stroke();
+		ctx.moveTo(3,10);
+		ctx.lineTo(8,12);
+		ctx.stroke();
+		ctx.restore();
+	}
 	this.move = function(t){
 		var desx = foodList[0].x;
 		var desy = foodList[0].y;
@@ -117,10 +152,12 @@ function Bug(x,y,type,level){
 		change_y = this.y + t/1000*this.speed* Math.sin(d);
 		//Collision
 		for(var j=0;j<bugList.length;j++){
-			willC = Math.sqrt((change_x-bugList[j].x)*(change_x-bugList[j].x) + (change_y -bugList[j].y)*(change_y -bugList[j].y))<Math.sqrt(5*5+20*20)*2;
-			isC =  Math.sqrt((this.x-bugList[j].x)*(this.x-bugList[j].x) + (this.y -bugList[j].y)*(this.y -bugList[j].y))<Math.sqrt(5*5+20*20)*2;
-			if(this.speed<bugList[j].speed && (willC ||isC)){
-				stop = 1;
+			if(bugList.dead == 0){
+				willC = Math.sqrt((change_x-bugList[j].x)*(change_x-bugList[j].x) + (change_y -bugList[j].y)*(change_y -bugList[j].y))<Math.sqrt(5*5+20*20)*2;
+				isC =  Math.sqrt((this.x-bugList[j].x)*(this.x-bugList[j].x) + (this.y -bugList[j].y)*(this.y -bugList[j].y))<Math.sqrt(5*5+20*20)*2;
+				if(this.speed<bugList[j].speed && (willC ||isC)){
+					stop = 1;
+				}
 			}
 			// else if(this.speed == bugList[j].speed && (willC ||isC) && this.y!=bugList[j].y){
 			// 	if(this.x<bugList[j].x && !(this.direction>= -Math.PI/2 && this.direction<Math.PI/2)){
@@ -214,10 +251,21 @@ function frame(curTime){
 	};
 	//Draw Bugs
 	for (var j = 0; j <bugList.length; j++) {
-		bugList[j].draw();
-		if(foodList.length>0){
-			bugList[j].move(curTime-lastTime);
+		if(bugList[j].dead ==0){
+			bugList[j].draw();
+			if(foodList.length>0){
+				bugList[j].move(curTime-lastTime);
+			}
 		}
+		else{
+			if(bugList[j].opacity>0){
+				bugList[j].fade();
+			}
+			else{
+				bugList.splice(j,1);
+			}
+		}
+
 	};
 	lastTime = curTime;
 	frameID = window.requestAnimationFrame(frame);
@@ -232,13 +280,13 @@ function pause(){
 function click(event){
 	var click_x = event.x;
 	var click_y = event.y;
-	/*for(var i = 0;i<bugList.length;i++){
+	for(var i = 0;i<bugList.length;i++){
 		if(Math.sqrt((bugList[i].x - click_x)*(bugList[i].x - click_x) + (bugList[i].y - click_y)*(bugList[i].y - click_y))<30){
-			header.scoreplus(bugList[i].score);
-			bugList.splice(i,1);
+			//header.scoreplus(bugList[i].score);
+			bugList[i].dead =1;
 		}
-	}*/
-	bugList.push(new Bug(event.x,event.y,'o',1));
+	}
+	//bugList.push(new Bug(event.x,event.y,'o',1));
 }
 //START
 function startgame(){
