@@ -32,22 +32,32 @@
 			left:50%;
 			position: absolute;
 			border:1px solid #000000;
-			background: blue;
 			margin-left: -150px;
 			margin-top:-150px;
+		}
+		#page1box{
+			width: 150px;
+			height:200px;
+			left: 50%;
+			top:50%;
+			position: absolute;
+			margin-left: -75px;
+			margin-top:-100px;
 		}
 	</style>
 </head>
 <body>
 <div id="page1">
+	<div id ="page1box">
 	<p>Level<input type="radio" name="level" value="1" checked="checked">1</input><input type="radio" name="level" value="2">2</input></p>
-	<p>High Score:</p><p id="Score"><p/>
+	<p>High Score:<span id="Score"></span></p>
 	<input id="startbutton"type="button" value="Start"></input>
+	</div>
 </div>
 <div id="page2">
 	<div id="header" >
-		<div id="headerTimer">Time:!!!!!!!!!!!!</div><button>adf</button>
-		<div id="headerScore">Score!!!!!!!</div>
+		<div id="headerTimer">Time:</div><input id="headerPause" type="button" value = "||"></input>
+		<div id="headerScore">Score:</div>
 	</div>
 	<canvas id="game" width="400" height= "600"></canvas>
 	<input id="endbutton" type="button" value="End"></input>

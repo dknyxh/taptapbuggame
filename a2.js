@@ -6,11 +6,16 @@ var ctx;
 var bugList = [];
 var foodList = [];
 var header;
+var isPause = 0;
+var timeLet;
+var scoreGet;
 //Time
 var startTime;
 var eTime;
 var lastTime;
+//A counter to count how many secs have passed
 var buggen;
+var buggenTo;
 //FrameID;
 var frameID;
 //CLASS DECALRE
@@ -21,7 +26,7 @@ function Bug(x,y,type,level){
 	this.direction = Math.PI/2;
 	this.dead = 0;
 	this.opacity = 1;
-	if(level = 1){
+	if(level ==1){
 		if(type == "b"){
 			this.speed = 150;
 			this.score = 5;
@@ -38,16 +43,24 @@ function Bug(x,y,type,level){
 			this.bugColor = "orange";
 		}
 	}
+	else if(level ==2){
+				if(type == "b"){
+			this.speed = 200;
+			this.score = 5;
+			this.bugColor = "black";
+		}
+		else if(type == "r"){
+			this.speed = 100;
+			this.score = 3;
+			this.bugColor = "red";
+		}
+		else if(type == "o"){
+			this.speed = 80;
+			this.score = 1;
+			this.bugColor = "orange";
+		}
+	}
 	this.draw = function(){
-			// ctx.save();
-			// ctx.beginPath();
-			// ctx.translate(this.x,this.y);
-			// ctx.rotate(this.direction+Math.PI/2);
-			// ctx.rect(-5,-20,10,40);
-			// ctx.stroke();
-			// ctx.fillStyle=this.bugColor;
-			// ctx.fillRect(-5,-20,10,20);
-			// ctx.restore();
 		ctx.save();
 		ctx.translate(this.x,this.y);
 		ctx.beginPath();
@@ -211,6 +224,7 @@ function Header(x,y,timer,pause,score){
 }
 //Frame
 function frame(curTime){
+	if(isPause == 0){
 	//Draw set up
 	ctx.clearRect(0,0,400,600);
 	//Time Section
@@ -220,31 +234,35 @@ function frame(curTime){
 	if(!lastTime){
 		lastTime=curTime;
 	}
+	if(buggenTo == 0){
+		buggenTo = Math.floor(Math.random()*3+1);
+	}
 	eTime = curTime-startTime;
 	if(eTime>=1000){
 		//header.countdown();
+		timeLet-=1;
+		header.timer.innerHTML = "Time:"+timeLet;
 		startTime = curTime;
 		buggen +=1;
 		//Generate Bugs
-		if(buggen ==1){
-			var nx = Math.floor((Math.random() * 390) + 0);
-			var rd = Math.floor(Math.random()*3);
+		if(buggen ==buggenTo){
+			var nx = Math.floor((Math.random() * 390) + 10);
+			var rd = Math.floor(Math.random()*10);
 			var col;
-			if(rd == 0){
+			if(rd >= 0 && rd<=3){
 				col = "o";
 			}
-			else if(rd ==1){
+			else if(rd>=4 && rd<=6){
 				col = "b";
 			}
 			else{
 				col = "r";
 			}
-			bugList.push(new Bug(nx,-20,col,1));
+			bugList.push(new Bug(nx,-20,col,level));
+			buggenTo = Math.floor(Math.random()*3+1);
 			buggen = 0;
 		}
 	}
-	//Draw Header
-	//header.draw();
 	//Draw Food
 	for (var i = 0; i <foodList.length; i++) {
 		foodList[i].draw();
@@ -258,7 +276,7 @@ function frame(curTime){
 			}
 		}
 		else{
-			if(bugList[j].opacity>0){
+			if(bugList[j].opacity>0.05){
 				bugList[j].fade();
 			}
 			else{
@@ -268,23 +286,46 @@ function frame(curTime){
 
 	};
 	lastTime = curTime;
+	}
+	else{
+		lastTime = curTime;
+	}
 	frameID = window.requestAnimationFrame(frame);
 	if(foodList.length==0){
 		endgame();
 	}
+	if(timeLet == 0 && level ==1){
+		golevel2();
+	}
+	else if (timeLet == 0 && level==2){
+		endgame();
+	}
+}
+function unpause(){
+	isPause = 0;
+	header.button.onclick = pause;
+	header.button.value = "||"
 }
 function pause(){
-	window.cancelAnimationFrame(frameID);
+	isPause = 1;
+	header.button.onclick = unpause;
+	header.button.value = "|>"
 }
 //Click
 function click(event){
-	var click_x = event.x;
-	var click_y = event.y;
-	for(var i = 0;i<bugList.length;i++){
-		if(Math.sqrt((bugList[i].x - click_x)*(bugList[i].x - click_x) + (bugList[i].y - click_y)*(bugList[i].y - click_y))<30){
-			//header.scoreplus(bugList[i].score);
-			bugList[i].dead =1;
+	if(isPause == 0){
+		var click_x = event.x;
+		var click_y = event.y;
+		for(var i = 0;i<bugList.length;i++){
+			if(Math.sqrt((bugList[i].x - click_x)*(bugList[i].x - click_x) + (bugList[i].y - click_y)*(bugList[i].y - click_y))<30){
+				bugList[i].dead =1;
+				scoreGet += bugList[i].score;
+				header.score.innerHTML = "Score:"+scoreGet;
+			}
 		}
+	}
+	else{
+
 	}
 	//bugList.push(new Bug(event.x,event.y,'o',1));
 }
@@ -294,12 +335,23 @@ function startgame(){
 	document.getElementById('page1').style.display = "none";
 	document.getElementById('page2').style.display = "inline";
 	//Set up canvas
-	var canvas = document.getElementById('game')
-	canvas.addEventListener("mousedown",click,false);
+	var canvas = document.getElementById('game');
+	//Set up timer and score and pause button
+	header = document.getElementById('header')
+	header.timer= document.getElementById('headerTimer');
+	header.score = document.getElementById('headerScore');
+	header.button = document.getElementById('headerPause');
+	header.button.onclick = pause;
+	scoreGet = 0;
+	timeLet =60;
+	header.timer.innerHTML = "Time:"+ timeLet;
+	header.score.innerHTML = "Score:"+ scoreGet;
+	canvas.addEventListener("click",click,false);
 	ctx = canvas.getContext("2d");
 	ctx.clearRect(0,0,400,800);
 	inGame = 1;
 	buggen = 0;
+	buggenTo = 0;
 	//Determine level
 	if(document.getElementsByName('level')[0].checked){
 		level = 1
@@ -325,10 +377,6 @@ function startgame(){
 	};
 	//AnimationRequest
 	window.requestAnimationFrame(frame);
-	//console.log(level);
-	//console.log(inGame);
-	//now = new Date();
-	//console.log(now.getSeconds())
 }
 
 function endgame(){
@@ -343,12 +391,66 @@ function endgame(){
 	eTime = null;
 	lastTime = null;
 	console.log(bugList.length);
+	if(localStorage.getItem("score")<scoreGet){
+		localStorage.setItem("score", scoreGet);
+		document.getElementById('Score').innerHTML = scoreGet;
+	}
 	document.getElementById('page1').style.display = "inline";
 	document.getElementById('page2').style.display = "none";
 }
-
+function golevel2(){
+	endgame();
+		//Switch pages
+	document.getElementById('page1').style.display = "none";
+	document.getElementById('page2').style.display = "inline";
+	//Set up canvas
+	var canvas = document.getElementById('game');
+	//Set up timer and score and pause button
+	header = document.getElementById('header')
+	header.timer= document.getElementById('headerTimer');
+	header.score = document.getElementById('headerScore');
+	header.button = document.getElementById('headerPause');
+	header.button.onclick = pause;
+	scoreGet = 0;
+	timeLet =60;
+	header.timer.innerHTML = "Time:"+ timeLet;
+	header.score.innerHTML = "Score:"+ scoreGet;
+	canvas.addEventListener("click",click,false);
+	ctx = canvas.getContext("2d");
+	ctx.clearRect(0,0,400,800);
+	inGame = 1;
+	buggen = 0;
+	buggenTo = 0;
+	//Determine level
+	level = 2;
+	//Create header
+	//header = new Header(0,0,100,1,100);
+	//Create food
+	var fx = 0;
+	var fy = 0;
+	for (var i = 0; i < 5; i++) {
+		fx = Math.floor((Math.random() * 380) + 0);
+		fy = Math.floor((Math.random() * 460) + 120);
+		for(var j =0;j<foodList.length;j++){
+			while(Math.abs(fx-foodList[j].x) < Math.sqrt(200) || Math.abs(fy-foodList[j].y) < Math.sqrt(200) ){
+				fx = Math.floor((Math.random() * 380) + 0);
+				fy = Math.floor((Math.random() * 460) + 120);
+			}
+		}
+		foodList.push(new Food(fx,fy));
+	};
+	//AnimationRequest
+	window.requestAnimationFrame(frame);
+}
 function pageload(){
 	document.getElementById('startbutton').onclick = startgame;
 	document.getElementById('endbutton').onclick = endgame;
+	var s = localStorage.getItem("score")
+	if(s){
+		document.getElementById('Score').innerHTML = s;
+	}
+	else{
+		document.getElementById('Score').innerHTML = 0;
+	}
 }
 window.onload = pageload
