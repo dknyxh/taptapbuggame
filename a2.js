@@ -194,32 +194,29 @@ function Food(x,y){
 	this.x = x;
 	this.y = y;
 	this.draw = function(){
+		ctx.save();
 		ctx.beginPath();
-		ctx.rect(this.x-10,this.y-10,20,20);
+		ctx.translate(this.x,this.y)
+		ctx.arc(0,0,10,0*Math.PI,2*Math.PI)
 		ctx.stroke();
-	}
-}
-function Header(x,y,timer,pause,score){
-	this.x = x;
-	this.y = y;
-	this.timer = timer;
-	this.pause = pause;
-	this.score = score;
-	this.draw = function(){
-		ctx.beginPath();
-		ctx.rect(this.x+2,this.y+2,396,196);
+		ctx.fillStyle = "#CC9900";
+		ctx.fill();
+		ctx.moveTo(-5,-5);
+		ctx.lineTo(-8,-5);
 		ctx.stroke();
-		ctx.font = "30px Comic Sans MS";
-		ctx.fillText(this.timer+"secs", this.x+2, this.y+32); 
-		ctx.font = "30px Comic Sans MS";
-		ctx.fillText(this.score, this.x+300, this.y+32); 
-
-	}
-	this.scoreplus = function(score){
-		this.score+=score;
-	}
-	this.countdown=function(){
-		this.timer= this.timer - 1;
+		ctx.moveTo(-5,-5);
+		ctx.lineTo(-5,-8);
+		ctx.stroke();
+		ctx.moveTo(0,1);
+		ctx.lineTo(2,4);
+		ctx.stroke();
+		ctx.moveTo(3,7);
+		ctx.lineTo(6,6);
+		ctx.stroke();
+		ctx.moveTo(-3,-2);
+		ctx.lineTo(-3,5);
+		ctx.stroke();
+		ctx.restore();
 	}
 }
 //Frame
@@ -314,10 +311,10 @@ function pause(){
 //Click
 function click(event){
 	if(isPause == 0){
-		var click_x = event.x;
-		var click_y = event.y;
+		var click_x = event.x - ctx.x;
+		var click_y = event.y - ctx.y;
 		for(var i = 0;i<bugList.length;i++){
-			if(Math.sqrt((bugList[i].x - click_x)*(bugList[i].x - click_x) + (bugList[i].y - click_y)*(bugList[i].y - click_y))<30){
+			if(Math.sqrt((bugList[i].x - click_x)*(bugList[i].x - click_x) + (bugList[i].y - click_y)*(bugList[i].y - click_y))<30 && bugList[i].dead ==0){
 				bugList[i].dead =1;
 				scoreGet += bugList[i].score;
 				header.score.innerHTML = "Score:"+scoreGet;
@@ -346,8 +343,10 @@ function startgame(){
 	timeLet =60;
 	header.timer.innerHTML = "Time:"+ timeLet;
 	header.score.innerHTML = "Score:"+ scoreGet;
-	canvas.addEventListener("click",click,false);
+	canvas.addEventListener("click",click,true);
 	ctx = canvas.getContext("2d");
+	ctx.x = canvas.getBoundingClientRect().left;
+	ctx.y = canvas.getBoundingClientRect().top;
 	ctx.clearRect(0,0,400,800);
 	inGame = 1;
 	buggen = 0;
@@ -365,11 +364,11 @@ function startgame(){
 	var fx = 0;
 	var fy = 0;
 	for (var i = 0; i < 5; i++) {
-		fx = Math.floor((Math.random() * 380) + 0);
+		fx = Math.floor((Math.random() * 380) + 10);
 		fy = Math.floor((Math.random() * 460) + 120);
 		for(var j =0;j<foodList.length;j++){
-			while(Math.abs(fx-foodList[j].x) < Math.sqrt(200) || Math.abs(fy-foodList[j].y) < Math.sqrt(200) ){
-				fx = Math.floor((Math.random() * 380) + 0);
+			while(Math.sqrt((fx-foodList[j].x)*(fx-foodList[j].x)+(fy-foodList[j].y)*(fy-foodList[j].y))< 30 ){
+				fx = Math.floor((Math.random() * 380) + 10);
 				fy = Math.floor((Math.random() * 460) + 120);
 			}
 		}
@@ -415,8 +414,10 @@ function golevel2(){
 	timeLet =60;
 	header.timer.innerHTML = "Time:"+ timeLet;
 	header.score.innerHTML = "Score:"+ scoreGet;
-	canvas.addEventListener("click",click,false);
+	canvas.addEventListener("click",click,true);
 	ctx = canvas.getContext("2d");
+	ctx.x = canvas.getBoundingClientRect().left;
+	ctx.y = canvas.getBoundingClientRect().top;
 	ctx.clearRect(0,0,400,800);
 	inGame = 1;
 	buggen = 0;
@@ -429,11 +430,11 @@ function golevel2(){
 	var fx = 0;
 	var fy = 0;
 	for (var i = 0; i < 5; i++) {
-		fx = Math.floor((Math.random() * 380) + 0);
+		fx = Math.floor((Math.random() * 360) + 25);
 		fy = Math.floor((Math.random() * 460) + 120);
 		for(var j =0;j<foodList.length;j++){
-			while(Math.abs(fx-foodList[j].x) < Math.sqrt(200) || Math.abs(fy-foodList[j].y) < Math.sqrt(200) ){
-				fx = Math.floor((Math.random() * 380) + 0);
+			while(Math.sqrt((fx-foodList[j].x)*(fx-foodList[j].x)+(fy-foodList[j].y)*(fy-foodList[j].y))< 30 ){
+				fx = Math.floor((Math.random() * 360) + 25);
 				fy = Math.floor((Math.random() * 460) + 120);
 			}
 		}
