@@ -292,7 +292,7 @@ function frame(curTime){
 		endgame();
 	}
 	if(timeLet == 0 && level ==1){
-		golevel2();
+		golevel(2);
 	}
 	else if (timeLet == 0 && level==2){
 		endgame();
@@ -385,23 +385,29 @@ function endgame(){
 	ctx.clearRect(0,0,400,600);
 	ctx = null;
 	inGame = 0;
-	level = 0;
 	startTime = null;
 	eTime = null;
 	lastTime = null;
-	console.log(bugList.length);
-	if(localStorage.getItem("score")<scoreGet){
-		localStorage.setItem("score", scoreGet);
-		document.getElementById('Score').innerHTML = scoreGet;
+	//console.log(bugList.length);
+	if(!localStorage.getItem(level)||localStorage.getItem(level)<scoreGet){
+		localStorage.setItem(level, scoreGet);
+		if(document.getElementsByName('level')[0].checked){
+			document.getElementById('Score').innerHTML = localStorage.getItem('1');
+		}
+		else{
+			document.getElementById('Score').innerHTML = localStorage.getItem('2');
+		}
+		
 	}
-	document.getElementById('page1').style.display = "inline";
-	document.getElementById('page2').style.display = "none";
+	if(window.confirm("Your score is "+scoreGet+",do you want to restart?")){
+		startlevel(level);
+	}
+	else{
+		document.getElementById('page1').style.display = "inline";
+		document.getElementById('page2').style.display = "none";
+	}
 }
-function golevel2(){
-	endgame();
-		//Switch pages
-	document.getElementById('page1').style.display = "none";
-	document.getElementById('page2').style.display = "inline";
+function startlevel(l){
 	//Set up canvas
 	var canvas = document.getElementById('game');
 	//Set up timer and score and pause button
@@ -423,7 +429,7 @@ function golevel2(){
 	buggen = 0;
 	buggenTo = 0;
 	//Determine level
-	level = 2;
+	level = l;
 	//Create header
 	//header = new Header(0,0,100,1,100);
 	//Create food
@@ -443,10 +449,46 @@ function golevel2(){
 	//AnimationRequest
 	window.requestAnimationFrame(frame);
 }
+function golevel(l){
+	window.cancelAnimationFrame(frameID);
+	bugList.splice(0,bugList.length);
+	foodList.splice(0,foodList.length);
+	ctx.clearRect(0,0,400,600);
+	ctx = null;
+	inGame = 0;
+	startTime = null;
+	eTime = null;
+	lastTime = null;
+	if(!localStorage.getItem(level)||localStorage.getItem(level)<scoreGet){
+		localStorage.setItem(level, scoreGet);
+		document.getElementById('Score').innerHTML = scoreGet;
+	}
+	startlevel(l);
+}
+function change_level1(){
+	var s = localStorage.getItem("1")
+	if(s){
+		document.getElementById('Score').innerHTML = s;
+	}
+	else{
+		document.getElementById('Score').innerHTML = 0;
+	}
+}
+function change_level2(){
+	var s = localStorage.getItem("2")
+	if(s){
+		document.getElementById('Score').innerHTML = s;
+	}
+	else{
+		document.getElementById('Score').innerHTML = 0;
+	}
+}
 function pageload(){
 	document.getElementById('startbutton').onclick = startgame;
 	document.getElementById('endbutton').onclick = endgame;
-	var s = localStorage.getItem("score")
+	document.getElementById('level1').onclick = change_level1;
+	document.getElementById('level2').onclick = change_level2;
+	var s = localStorage.getItem("1")
 	if(s){
 		document.getElementById('Score').innerHTML = s;
 	}
