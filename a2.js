@@ -165,7 +165,7 @@ function Bug(x,y,type,level){
 		change_y = this.y + t/1000*this.speed* Math.sin(d);
 		//Collision
 		for(var j=0;j<bugList.length;j++){
-			if(bugList.dead == 0){
+			if(bugList[j].dead == 0){
 				willC = Math.sqrt((change_x-bugList[j].x)*(change_x-bugList[j].x) + (change_y -bugList[j].y)*(change_y -bugList[j].y))<Math.sqrt(5*5+20*20)*2;
 				isC =  Math.sqrt((this.x-bugList[j].x)*(this.x-bugList[j].x) + (this.y -bugList[j].y)*(this.y -bugList[j].y))<Math.sqrt(5*5+20*20)*2;
 				if(this.speed<bugList[j].speed && (willC ||isC)){
