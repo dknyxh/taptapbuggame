@@ -171,6 +171,9 @@ function Bug(x,y,type,level){
 				if(this.speed<bugList[j].speed && (willC ||isC)){
 					stop = 1;
 				}
+				if(this.x <bugList[j].x &&Math.abs(this.direction - bugList[j].direction)>Math.PI/6&&this.speed == bugList[j].speed &&(willC ||isC)){
+					stop = 1;
+				}
 			}
 			// else if(this.speed == bugList[j].speed && (willC ||isC) && this.y!=bugList[j].y){
 			// 	if(this.x<bugList[j].x && !(this.direction>= -Math.PI/2 && this.direction<Math.PI/2)){
@@ -324,7 +327,7 @@ function click(event){
 	else{
 
 	}
-	//bugList.push(new Bug(event.x,event.y,'o',1));
+	//bugList.push(new Bug(click_x,click_y,'b',1));
 }
 //START
 function startgame(){
